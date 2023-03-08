@@ -1,15 +1,12 @@
 #ifndef ITERATORTRAITS_HPP
 #define ITERATORTRAITS_HPP
 
-#include <iostream>
 #include "Iterator.hpp"
 
 namespace ft
 {
     template <class iterator>
-    struct iterator_traits;
-
-    struct iterator_traits<iterator>
+    struct iterator_traits
     {
         typedef typename Iterator::difference_type difference_type;
         typedef typename Iterator::value_type value_type;
