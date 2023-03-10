@@ -18,7 +18,12 @@ namespace ft
             typedef typename ft::iterator_traits<Iterator>::iterator_category iterator_category;
             random_access_iterator(){}
             explicit random_access_iterator(Iterator iter):_iter(iter){}
-            Iterator getIterator() {return _iter;}
+            random_access_iterator(const random_access_iterator  & rai){this->_iter = rai._iter;}
+            random_access_iterator &operator=(const random_access_iterator  & rai){
+                if (this->_iter != rai._iter)this->_iter = rai._iter;
+                return *this;
+            }
+            Iterator getIterator() const {return _iter;}
             reference operator*() const{return *_iter;}
             pointer operator->() const{return &(operator*());}
             random_access_iterator & operator++(){
@@ -77,7 +82,7 @@ namespace ft
 
     template <class Iterator> typename random_access_iterator<Iterator>::difference_type operator-(
     const random_access_iterator<Iterator>& rhs,const random_access_iterator<Iterator>& lhs)
-    {return (rhs._iter - lhs.iter);}
+    {return (rhs.getIterator() - lhs.getIterator());}
 
     template <class Iterator> random_access_iterator<Iterator> operator+(
     typename random_access_iterator<Iterator>::difference_type n,const random_access_iterator<Iterator>& iter)

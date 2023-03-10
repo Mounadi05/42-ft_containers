@@ -18,6 +18,7 @@ namespace ft
             typedef typename ft::iterator_traits<Iterator>::reference reference;
             reverse_iterator(){}
             explicit reverse_iterator(Iterator iter):_iter(iter){}
+            template <class U> reverse_iterator(const reverse_iterator<U>& u){this->_iter = u._iter;}
             Iterator getIterator() const{return _iter;}
             reference operator*() const{
                 Iterator tmp = _iter;    
