@@ -34,14 +34,10 @@ namespace ft{
         public :
             explicit vector(const allocator_type& alloc = allocator_type()):_data(NULL),_size(0),_capacity(0),_alloc(alloc){}
             explicit vector(size_type n, const value_type& val = value_type(), 
-            const allocator_type& alloc = allocator_type()):_data(NULL),_size(0),_capacity(0),_alloc(alloc){
-                assign(n, val);
-            }
+            const allocator_type& alloc = allocator_type()):_data(NULL),_size(0),_capacity(0),_alloc(alloc){assign(n, val);}
             
             template <class InputIterator> vector (InputIterator first, InputIterator last,
-            const allocator_type& alloc = allocator_type()):_data(NULL),_size(0),_capacity(0),_alloc(alloc){
-                assign(first, last);
-            }
+            const allocator_type& alloc = allocator_type()):_data(NULL),_size(0),_capacity(0),_alloc(alloc){assign(first, last);}
             ~vector()
             {
                 clear();
@@ -67,9 +63,10 @@ namespace ft{
             }
             void assign(size_type n, const value_type& val)
             {
-                for(size_t i = 0 ; i < _size;i++)_alloc.destroy(&_data[i]);
+                clear();
                 if (n > _capacity)
                 {
+                    if (_capacity > 0)_alloc.deallocate(_data,_capacity);
                     _capacity = n;
                     _data= _alloc.allocate(_capacity);
                 }
@@ -80,8 +77,7 @@ namespace ft{
             template <class InputIterator>  
             void assign (InputIterator first, InputIterator last)
             {
-
-                size_type size = last - first;
+                 size_type size = last - first;
                 if (size > _capacity)
                 {
                     _capacity = size;
@@ -90,34 +86,17 @@ namespace ft{
                 _size = size;
                 for(size_type i = 0;first != last;i++)_data[i] = *(first++);
             }
-            reference at(size_type n)
-            {
-                if(n >= _size) throw std::out_of_range("vector");
-                return _data[n];
-            }
-            const_reference at (size_type n) const{
-                if(n >= _size) throw std::out_of_range("vector");
-                return _data[n];
-            }
+            reference at(size_type n){return(n >= _size) ? throw std::out_of_range("vector") : _data[n];}
+            const_reference at (size_type n) const{return(n >= _size) ? throw std::out_of_range("vector") : _data[n];}
             size_type capacity() const{ return _capacity;}
             size_type size() const{return _size;}
             bool empty() const{return (_size == 0);}
-            reference operator[] (size_type n){
-                if(n >= _size) throw std::out_of_range("vector");
-                return _data[n];
-            }   
-            const_reference operator[] (size_type n) const{
-                if(n >= _size) throw std::out_of_range("vector");
-                return _data[n];
-            }
+            reference operator[] (size_type n){return _data[n];}   
+            const_reference operator[] (size_type n) const{return _data[n];}
             reference front(){return *_data;}
             const_reference front() const{return *_data;}
-            reference back(){
-                return _data[_size-1];
-            }
-            const_reference back() const{
-                return _data[_size-1];
-            }
+            reference back(){return _data[_size-1];}
+            const_reference back() const{return _data[_size-1];}
             void clear(){while(_size > 0)_alloc.destroy(&_data[--_size]);}
             iterator begin(){return iterator(_data);}
             const_iterator begin() const{return const_iterator(_data);}
