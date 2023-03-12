@@ -5,6 +5,7 @@
 #include "utils/RandomAccessIterator.hpp"
 #include "utils/ReverseIterator.hpp"
 #include <stdexcept>   
+#include <type_traits>
 
 
 
@@ -27,17 +28,18 @@ namespace ft{
             typedef ft::reverse_iterator<iterator>                          reverse_iterator;
             typedef ft::reverse_iterator<const_iterator>                    const_reverse_iterator;
         protected :
-            pointer         _data;
-            size_type       _size;
-            size_type       _capacity;
-            Allocator       _alloc;
+            pointer             _data;
+            size_type           _size;
+            size_type           _capacity;
+            allocator_type      _alloc;
         public :
             explicit vector(const allocator_type& alloc = allocator_type()):_data(NULL),_size(0),_capacity(0),_alloc(alloc){}
             explicit vector(size_type n, const value_type& val = value_type(), 
             const allocator_type& alloc = allocator_type()):_data(NULL),_size(0),_capacity(0),_alloc(alloc){assign(n, val);}
             
             template <class InputIterator> vector (InputIterator first, InputIterator last,
-            const allocator_type& alloc = allocator_type()):_data(NULL),_size(0),_capacity(0),_alloc(alloc){assign(first, last);}
+            const allocator_type& alloc = allocator_type(),typename std::enable_if<std::is_integral<typename std::iterator_traits<InputIterator>::value_type>::value>::type* = 0):_data(NULL),_size(0),_capacity(0),_alloc(alloc){assign(first, last);}
+
             ~vector()
             {
                 clear();
@@ -73,11 +75,11 @@ namespace ft{
                 _size = n;
                 for(size_type i = 0; i < n; i++)_alloc.construct(&_data[i], val);
             }
-
+           
             template <class InputIterator>  
-            void assign (InputIterator first, InputIterator last)
+            void assign (InputIterator first, InputIterator last, typename std::enable_if<std::is_integral<typename std::iterator_traits<InputIterator>::value_type>::value>::type = 0)
             {
-                 size_type size = last - first;
+                size_type size = last - first;
                 if (size > _capacity)
                 {
                     _capacity = size;
@@ -86,6 +88,26 @@ namespace ft{
                 _size = size;
                 for(size_type i = 0;first != last;i++)_data[i] = *(first++);
             }
+            void reserve (size_type n)
+            {
+                if (n > _capacity)
+                {
+                    size_type size = _size;
+                    pointer tmp = _alloc.allocate(size);
+                    for(size_type i = 0; i < _size; i++)_alloc.construct(&tmp[i], _data[i]);
+                    clear();
+                    _alloc.deallocate(_data,_capacity);
+                    _data = _alloc.allocate(n);
+                    _capacity = n;
+                    _size = size;
+                    for(size_type i = 0; i < _size; i++)_alloc.construct(&_data[i], tmp[i]);
+                    while(size > 0)_alloc.destroy(&tmp[--size]);
+                    _alloc.deallocate(tmp,_size);
+                }
+            }
+            size_type max_size() const{return _alloc.max_size();}
+            allocator_type get_allocator() const{return _alloc;}
+            void pop_back(){_alloc.destroy(&_data[--_size]);}
             reference at(size_type n){return(n >= _size) ? throw std::out_of_range("vector") : _data[n];}
             const_reference at (size_type n) const{return(n >= _size) ? throw std::out_of_range("vector") : _data[n];}
             size_type capacity() const{ return _capacity;}
@@ -107,6 +129,16 @@ namespace ft{
             reverse_iterator rbegin(){return reverse_iterator(_data + _size);}
             const_reverse_iterator rbegin() const{return const_reverse_iterator(_data + _size);}
             
+
+    // template <class InputIterator>
+    // void assign(InputIterator first, InputIterator last)
+    // {
+    //     clear();
+    //     reserve(std::distance(first, last));
+    //     for (iterator it = begin(); first != last; ++first, ++it)
+    //         _alloc.construct(it, *first);
+    //     _size = std::distance(first, last);
+    // }
     };
 }
 #endif
