@@ -51,15 +51,17 @@ namespace ft{
                 for(size_type i = 0 ; i < _size; i++) _alloc.construct(&_data[i], other._data[i]);
             }
             vector& operator= (const vector& other){
-                if(_capacity > 0)
-                { 
-                    clear();
-                    _alloc.deallocate(this->_data,this->_capacity);
+                if(other._data != this->_data){
+                    if(_capacity > 0)
+                    { 
+                        clear();
+                        _alloc.deallocate(this->_data,this->_capacity);
+                    }
+                    _capacity = other._capacity;
+                    _size = other._size;
+                    _data = _alloc.allocate(_capacity);
+                    for(size_type i = 0 ; i < _size; i++) _alloc.construct(&_data[i], other._data[i]);
                 }
-                _capacity = other._capacity;
-                _size = other._size;
-                _data = _alloc.allocate(_capacity);
-                for(size_type i = 0 ; i < _size; i++) _alloc.construct(&_data[i], other._data[i]);
                 return *this;
             }
             void assign(size_type n, const value_type& val)
@@ -90,15 +92,15 @@ namespace ft{
                 }
                 for( size_type i = 0; i < tmp.size();i++)_alloc.construct(&_data[_size++], tmp.at(i));
             }
-            void reserve (size_type n)
+            void reserve(size_type n)
             {
-                if (n > _capacity)
-                {
+                if (n > max_size())throw std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size");
+                if (n > _capacity){
                     size_type size = _size;
                     pointer tmp = _alloc.allocate(size);
                     for(size_type i = 0; i < _size; i++)_alloc.construct(&tmp[i], _data[i]);
                     clear();
-                    _alloc.deallocate(_data,_capacity);
+                    if (_capacity) _alloc.deallocate(_data,_capacity);
                     _data = _alloc.allocate(n);
                     _capacity = n;
                     _size = size;
@@ -109,7 +111,6 @@ namespace ft{
             }
             void push_back (const value_type& val)
             {
-               // std::cerr << ">>>> push_back" << std::endl;
                 if (!_capacity)
                 {
                     _data = _alloc.allocate(++_capacity);
@@ -123,9 +124,8 @@ namespace ft{
                         _alloc.construct(&_data[_size++],val);
                     }
                 }
-               // std::cerr << "<<<<< push_back" << std::endl;
             }
-            size_type max_size() const{return _alloc.max_size();}
+            size_type max_size() const{return (sizeof(T) == 1) ? _alloc.max_size()/2 : _alloc.max_size();}
             allocator_type get_allocator() const{return _alloc;}
             void pop_back(){_alloc.destroy(&_data[--_size]);}
             reference at(size_type n){return(n >= _size) ? throw std::out_of_range("vector") : _data[n];}
@@ -158,19 +158,18 @@ namespace ft{
             //     }
             //     return result;
             // }
-    friend bool operator== (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){
-        if (!(lhs._alloc == rhs._alloc && lhs._size == rhs._size && lhs._capacity == rhs._capacity))return false;
-        for(size_t i = 0; i < lhs._size ; i++)if (lhs._data[i] != rhs._data[i]) return false;            
-        return true;
-    }
-    friend bool operator< (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs) {
-        return lexicographical_compare (lhs.begin(), lhs.end(),rhs.begin(),rhs.end());
-    }
-    friend bool operator!= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(lhs == rhs);}
-    friend bool operator> (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return (rhs < lhs);}
-    friend bool operator<= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(rhs < lhs);}
-    friend bool operator>= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(rhs > lhs);}
-
+            friend bool operator== (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){
+                if (!(lhs._alloc == rhs._alloc && lhs._size == rhs._size && lhs._capacity == rhs._capacity))return false;
+                for(size_t i = 0; i < lhs._size ; i++)if (lhs._data[i] != rhs._data[i]) return false;            
+                return true;
+            }
+            friend bool operator< (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs) {
+                return lexicographical_compare (lhs.begin(), lhs.end(),rhs.begin(),rhs.end());
+            }
+            friend bool operator!= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(lhs == rhs);}
+            friend bool operator> (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return (rhs < lhs);}
+            friend bool operator<= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(rhs < lhs);}
+            friend bool operator>= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(rhs > lhs);}
     };
    
 }
