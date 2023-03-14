@@ -125,6 +125,20 @@ namespace ft{
                     }
                 }
             }
+            iterator erase (iterator position)
+            {
+                for(iterator i  = position; i < end()-1; i++) *i = *(i+1);
+                _alloc.destroy(&_data[--_size]);
+                return position;
+            }
+            iterator erase (iterator first, iterator last)
+            {
+                size_type it  = distance(begin(),first);
+                size_type it1 =  distance(first,last);
+                for(;(it+it1) < _size; it++) _data[it] = _data[it+it1];
+                for(; it1 > 0; it1--)_alloc.destroy(&_data[--_size]);
+                return first;
+            }
             size_type max_size() const{return (sizeof(T) == 1) ? _alloc.max_size()/2 : _alloc.max_size();}
             allocator_type get_allocator() const{return _alloc;}
             void pop_back(){_alloc.destroy(&_data[--_size]);}
@@ -148,16 +162,16 @@ namespace ft{
             const_reverse_iterator rend() const{return const_reverse_iterator(_data);}
             reverse_iterator rbegin(){return reverse_iterator(_data + _size);}
             const_reverse_iterator rbegin() const{return const_reverse_iterator(_data + _size);}
-            // template <class It>
-            // size_type distance(It first, It last)
-            // {
-            //     size_type result = 0;
-            //     while (first != last) {
-            //         ++first;
-            //         ++result;
-            //     }
-            //     return result;
-            // }
+            template <class It>
+            size_type distance(It first, It last)
+            {
+                size_type result = 0;
+                while (first != last) {
+                     ++first;
+                    ++result;
+                }
+                return result;
+            }
             friend bool operator== (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){
                 if (!(lhs._alloc == rhs._alloc && lhs._size == rhs._size && lhs._capacity == rhs._capacity))return false;
                 for(size_t i = 0; i < lhs._size ; i++)if (lhs._data[i] != rhs._data[i]) return false;            
