@@ -37,7 +37,8 @@ namespace ft{
             const allocator_type& alloc = allocator_type()):_data(NULL),_size(0),_capacity(0),_alloc(alloc){assign(n, val);}
             
             template <class InputIterator> vector (InputIterator first, InputIterator last,
-            const allocator_type& alloc = allocator_type(),typename std::enable_if<!std::is_integral<InputIterator>::value,InputIterator>::type* = 0):_data(NULL),_size(0),_capacity(0),_alloc(alloc){assign(first, last);}
+            const allocator_type& alloc = allocator_type(),typename std::enable_if<!std::is_integral<InputIterator>::value,InputIterator>::type* = 0)
+            :_data(NULL),_size(0),_capacity(0),_alloc(alloc){assign(first, last);}
 
             ~vector()
             {
@@ -52,15 +53,8 @@ namespace ft{
             }
             vector& operator= (const vector& other){
                 if(other._data != this->_data){
-                    if(_capacity > 0)
-                    { 
-                        clear();
-                        _alloc.deallocate(this->_data,this->_capacity);
-                    }
-                    _capacity = other._capacity;
-                    _size = other._size;
-                    _data = _alloc.allocate(_capacity);
-                    for(size_type i = 0 ; i < _size; i++) _alloc.construct(&_data[i], other._data[i]);
+                    this->~vector();
+                    new(this) vector(other);
                 }
                 return *this;
             }
@@ -82,8 +76,7 @@ namespace ft{
             {   
                 clear();
                 vector tmp;
-                while(first != last)
-                    tmp.push_back(*first++);
+                while(first != last) tmp.push_back(*first++);
                 if (tmp.size() > _capacity)
                 {
                     if (_capacity > 0)_alloc.deallocate(_data,_capacity);
@@ -94,7 +87,7 @@ namespace ft{
             }
             void reserve(size_type n)
             {
-                if (n > max_size())throw std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size");
+                if (n >= max_size())throw std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size");
                 if (n > _capacity){
                     size_type size = _size;
                     pointer tmp = _alloc.allocate(size);
@@ -111,11 +104,7 @@ namespace ft{
             }
             void push_back (const value_type& val)
             {
-                if (!_capacity)
-                {
-                    _data = _alloc.allocate(++_capacity);
-                    _alloc.construct(&_data[_size++],val);
-                }
+                if (!_capacity) assign(1,val);
                 else 
                 {
                     if (_size < _capacity)_alloc.construct(&_data[_size++],val);
@@ -131,14 +120,33 @@ namespace ft{
                 _alloc.destroy(&_data[--_size]);
                 return position;
             }
-            iterator erase (iterator first, iterator last)
+            iterator erase(iterator first, iterator last)
             {
-                size_type it  = distance(begin(),first);
-                size_type it1 =  distance(first,last);
+                size_type it  = first - begin();
+                size_type it1 =  last - first;
                 for(;(it+it1) < _size; it++) _data[it] = _data[it+it1];
-                for(; it1 > 0; it1--)_alloc.destroy(&_data[--_size]);
+                for(; it1 > 0; it1--) _alloc.destroy(&_data[--_size]);
                 return first;
             }
+            void resize (size_type n, value_type val = value_type())
+            {
+                if(n < _size) while(_size > n) _alloc.destroy(&_data[--_size]);
+                else if (n >= max_size()) throw std::length_error("vector");
+                else while(_size < n) push_back(val);
+            }
+            iterator insert (iterator position, const value_type& val)
+            {
+                size_type m = distance(begin(), position);
+                if (position == end())push_back(val);
+                else
+                {
+                    for(iterator i = end() ;i > position; i--) *i = *(i-1);
+                    *iterator(position) = val;
+                    _size++;
+                }
+                return iterator(_data + m);
+            }
+          
             size_type max_size() const{return (sizeof(T) == 1) ? _alloc.max_size()/2 : _alloc.max_size();}
             allocator_type get_allocator() const{return _alloc;}
             void pop_back(){_alloc.destroy(&_data[--_size]);}
@@ -167,14 +175,14 @@ namespace ft{
             {
                 size_type result = 0;
                 while (first != last) {
-                     ++first;
+                    ++first;
                     ++result;
                 }
                 return result;
             }
             friend bool operator== (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){
                 if (!(lhs._alloc == rhs._alloc && lhs._size == rhs._size && lhs._capacity == rhs._capacity))return false;
-                for(size_t i = 0; i < lhs._size ; i++)if (lhs._data[i] != rhs._data[i]) return false;            
+                for(size_t i = 0; i < lhs._size ; i++) if(lhs._data[i] != rhs._data[i]) return false;            
                 return true;
             }
             friend bool operator< (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs) {
