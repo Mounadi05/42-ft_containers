@@ -2,8 +2,8 @@
 #define VECTOR_HPP
 
 #include <memory>
-#include "utils/RandomAccessIterator.hpp"
-#include "utils/ReverseIterator.hpp"
+#include "iterator/RandomAccessIterator.hpp"
+#include "iterator/ReverseIterator.hpp"
 #include <stdexcept>   
 #include <type_traits>
 #include <iterator>
@@ -89,6 +89,7 @@ namespace ft{
             {
                 if (n >= max_size())throw std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size");
                 if (n > _capacity){
+                    std::cerr << "1" << std::endl;
                     size_type size = _size;
                     pointer tmp = _alloc.allocate(size);
                     for(size_type i = 0; i < _size; i++)_alloc.construct(&tmp[i], _data[i]);
@@ -114,12 +115,7 @@ namespace ft{
                     }
                 }
             }
-            iterator erase (iterator position)
-            {
-                for(iterator i  = position; i < end()-1; i++) *i = *(i+1);
-                _alloc.destroy(&_data[--_size]);
-                return position;
-            }
+            iterator erase (iterator position){return erase(position , position + 1);}
             iterator erase(iterator first, iterator last)
             {
                 size_type it  = first - begin();
@@ -136,17 +132,31 @@ namespace ft{
             }
             iterator insert (iterator position, const value_type& val)
             {
-                size_type m = distance(begin(), position);
-                if (position == end())push_back(val);
-                else
-                {
-                    for(iterator i = end() ;i > position; i--) *i = *(i-1);
-                    *iterator(position) = val;
-                    _size++;
-                }
-                return iterator(_data + m);
+                size_type pos = position- begin();
+                insert (position, 1, val);
+                return iterator(_data + pos);       
             }
-          
+            void insert (iterator position, size_type n, const value_type& val)
+            {
+                if (n > 0)
+                {
+                    size_t pos = 0;
+                    size_t start = position - begin();
+                    size_t end_t = end() - position;
+                    if (n >= end_t) pos= n;
+                    else pos = end_t;
+                    if (!_capacity) reserve(n);
+                    else if ((n + _size) > (_capacity * 2)) reserve(_capacity + n);
+                    else if ( (n + _size) > _capacity && (n + _size) < (_capacity * 2)) reserve(_capacity * 2);
+                    for(size_type i = pos ; i > 0 ;i--)
+                    {
+                       // _alloc.construct(&_data[end_t - i + 1], _data[_size - i - 1]);
+                        _data[_size + i - 1] = _data[start+i-1];
+                    }
+                    _size += n;
+                    for(size_t i = n ;i > 0 ; i--) _alloc.construct(&_data[start++],val);
+                }
+             }
             size_type max_size() const{return (sizeof(T) == 1) ? _alloc.max_size()/2 : _alloc.max_size();}
             allocator_type get_allocator() const{return _alloc;}
             void pop_back(){_alloc.destroy(&_data[--_size]);}
