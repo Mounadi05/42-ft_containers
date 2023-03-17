@@ -89,7 +89,6 @@ namespace ft{
             {
                 if (n >= max_size())throw std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size");
                 if (n > _capacity){
-                    std::cerr << "1" << std::endl;
                     size_type size = _size;
                     pointer tmp = _alloc.allocate(size);
                     for(size_type i = 0; i < _size; i++)_alloc.construct(&tmp[i], _data[i]);
@@ -132,31 +131,50 @@ namespace ft{
             }
             iterator insert (iterator position, const value_type& val)
             {
-                size_type pos = position- begin();
+                size_type pos = position - begin();
                 insert (position, 1, val);
                 return iterator(_data + pos);       
             }
-            void insert (iterator position, size_type n, const value_type& val)
+            void insert(iterator position, size_type n, const value_type& val)
             {
                 if (n > 0)
                 {
-                    size_t pos = 0;
+                    size_t tmp_size = _size;
                     size_t start = position - begin();
-                    size_t end_t = end() - position;
-                    if (n >= end_t) pos= n;
-                    else pos = end_t;
-                    if (!_capacity) reserve(n);
-                    else if ((n + _size) > (_capacity * 2)) reserve(_capacity + n);
-                    else if ( (n + _size) > _capacity && (n + _size) < (_capacity * 2)) reserve(_capacity * 2);
-                    for(size_type i = pos ; i > 0 ;i--)
-                    {
-                       // _alloc.construct(&_data[end_t - i + 1], _data[_size - i - 1]);
-                        _data[_size + i - 1] = _data[start+i-1];
-                    }
-                    _size += n;
-                    for(size_t i = n ;i > 0 ; i--) _alloc.construct(&_data[start++],val);
+                    if (n + _size > _capacity)reserve(ft::max(n + _capacity, _capacity * 2));
+                    for(;_size > start; _size--)
+                        if (_size + n - 1 < tmp_size)_data[_size + n - 1] = _data[_size - 1];
+                        else _alloc.construct(&_data[_size + n - 1], _data[_size - 1]);
+                    _size = n + tmp_size;
+                    for(size_t i = n ;i > 0; i--) 
+                       if (start < tmp_size) _data[start++]= val;
+                       else _alloc.construct(&_data[start++],val);
                 }
-             }
+            }
+            template <class InputIterator>
+            void insert (iterator position, InputIterator first, InputIterator last, typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type* = 0)
+            {
+                for (; first != last; ++first)
+                {
+                     position = insert(position, *first);
+                    ++position;
+                }
+            }
+            void swap(vector& x)
+            {
+                pointer             tmp_data = x._data;
+                size_type           tmp_size = x._size;
+                size_type           tmp_cap = x._capacity;
+                allocator_type      tmp_alloc = x._alloc;
+                x._data = this->_data;
+                x._size = this->_size;
+                x._capacity = this->_capacity;
+                x._alloc = this->_alloc;
+                this->_data = tmp_data;
+                this->_size = tmp_size;
+                this->_capacity = tmp_cap;
+                this->_alloc = tmp_alloc;
+            }
             size_type max_size() const{return (sizeof(T) == 1) ? _alloc.max_size()/2 : _alloc.max_size();}
             allocator_type get_allocator() const{return _alloc;}
             void pop_back(){_alloc.destroy(&_data[--_size]);}
@@ -180,29 +198,33 @@ namespace ft{
             const_reverse_iterator rend() const{return const_reverse_iterator(_data);}
             reverse_iterator rbegin(){return reverse_iterator(_data + _size);}
             const_reverse_iterator rbegin() const{return const_reverse_iterator(_data + _size);}
-            template <class It>
-            size_type distance(It first, It last)
-            {
-                size_type result = 0;
-                while (first != last) {
-                    ++first;
-                    ++result;
-                }
-                return result;
-            }
-            friend bool operator== (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){
-                if (!(lhs._alloc == rhs._alloc && lhs._size == rhs._size && lhs._capacity == rhs._capacity))return false;
-                for(size_t i = 0; i < lhs._size ; i++) if(lhs._data[i] != rhs._data[i]) return false;            
-                return true;
-            }
-            friend bool operator< (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs) {
-                return lexicographical_compare (lhs.begin(), lhs.end(),rhs.begin(),rhs.end());
-            }
-            friend bool operator!= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(lhs == rhs);}
-            friend bool operator> (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return (rhs < lhs);}
-            friend bool operator<= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(rhs < lhs);}
-            friend bool operator>= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(rhs > lhs);}
+          
     };
-   
+    template <class T, class Alloc>  
+    void swap (vector<T,Alloc>& x, vector<T,Alloc>& y)
+    {
+            x.swap(y);
+    }
+    template <class T, class Allocator>
+    bool operator== (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){
+        if (lhs.size() == rhs.size())return ft::equal(lhs.begin(),lhs.end(),rhs.begin());    
+        return false;
+    }
+ 
+    template <class T, class Allocator>
+    bool operator< (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs) {
+        return ft::lexicographical_compare (lhs.begin(), lhs.end(),rhs.begin(),rhs.end());
+    }
+    template <class T, class Allocator>
+    bool operator!= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(lhs == rhs);}
+
+    template <class T, class Allocator>
+    bool operator> (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return (rhs < lhs);}
+    
+    template <class T, class Allocator>
+    bool operator<= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(rhs < lhs);}
+
+    template <class T, class Allocator>
+    bool operator>= (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){ return !(rhs > lhs);}
 }
 #endif
