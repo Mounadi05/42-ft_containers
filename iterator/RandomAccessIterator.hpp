@@ -18,7 +18,8 @@ namespace ft
             typedef typename ft::iterator_traits<Iterator>::iterator_category iterator_category;
             random_access_iterator(){}
             explicit random_access_iterator(Iterator iter):_iter(iter){}
-            random_access_iterator(const random_access_iterator  & rai){this->_iter = rai._iter;}
+            template <class U> 
+            random_access_iterator(const random_access_iterator<U>& u):_iter(u.getIterator()){}
             random_access_iterator &operator=(const random_access_iterator  & rai){
                 if (this->_iter != rai._iter)this->_iter = rai._iter;
                 return *this;

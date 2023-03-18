@@ -18,7 +18,12 @@ namespace ft
             typedef typename ft::iterator_traits<Iterator>::reference reference;
             reverse_iterator(){}
             explicit reverse_iterator(Iterator iter):_iter(iter){}
-            template <class U> reverse_iterator(const reverse_iterator<U>& u){this->_iter = u._iter;}
+            template <class U> 
+            reverse_iterator(const reverse_iterator<U>& u):_iter(u.getIterator()){}
+            reverse_iterator &operator=(const reverse_iterator & rai){
+                if (this->_iter != rai.getIterator())this->_iter = rai._iter;
+                return *this;
+            }
             Iterator getIterator() const{return _iter;}
             reference operator*() const{
                 Iterator tmp = _iter;    
@@ -53,7 +58,7 @@ namespace ft
                 _iter += n;
                 return *this;
             }
-            reference operator[](difference_type n) const{return *(-n-1);}
+            reference operator[](difference_type n) const{return _iter[-n-1];}
 
     };
     template <class Iter1, class Iter2> 
@@ -74,16 +79,16 @@ namespace ft
     
     template <class Iter1,class Iter2> 
     inline bool operator<=(const reverse_iterator<Iter1>& lhs,
-    const reverse_iterator<Iter2>& rhs){return (rhs > lhs);}
+    const reverse_iterator<Iter2>& rhs){return (lhs.getIterator() >= rhs.getIterator());}
     
     template <class Iter1,class Iter2> 
     inline bool operator>=(const reverse_iterator<Iter1>& lhs,
-    const reverse_iterator<Iter2>& rhs){return (rhs < lhs);}
+    const reverse_iterator<Iter2>& rhs){return (lhs.getIterator() <= rhs.getIterator());}
 
     template <class Iterator>
     typename reverse_iterator<Iterator>::difference_type operator-(
     const reverse_iterator<Iterator>& rhs,const reverse_iterator<Iterator>& lhs)
-    {return (lhs._iter - rhs.iter);}
+    {return (lhs.getIterator() - rhs.getIterator());}
 
     template <class Iterator> reverse_iterator<Iterator> operator+(
     typename reverse_iterator<Iterator>::difference_type n,const reverse_iterator<Iterator>& iter)
