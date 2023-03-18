@@ -14,8 +14,7 @@ class stack {
         typedef typename Container::size_type               size_type;
         typedef Container                                   container_type;
         
-    
-        explicit stack(const Container& = Container()){};
+        explicit stack(const Container& C = Container()):c(C){};
         stack& operator=(const stack& S){c = S.c; return *this;}
         bool empty() const { return c.empty(); }
         size_type size() const { return c.size(); }

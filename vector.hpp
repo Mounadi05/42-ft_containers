@@ -24,8 +24,8 @@ namespace ft{
             typedef typename Allocator::const_pointer                       const_pointer;
             typedef typename ft::random_access_iterator<pointer>            iterator;
             typedef typename ft::random_access_iterator<const_pointer>      const_iterator;
-            typedef ft::reverse_iterator<iterator>                          reverse_iterator;
-            typedef ft::reverse_iterator<const_iterator>                    const_reverse_iterator;
+            typedef ft::reverse_iterator<pointer>                          reverse_iterator;
+            typedef ft::reverse_iterator<const_pointer>                    const_reverse_iterator;
         protected :
             pointer             _data;
             size_type           _size;
@@ -49,12 +49,30 @@ namespace ft{
                 _capacity = other._capacity;
                 _size = other._size;
                 _data = _alloc.allocate(_capacity);
+                _alloc =  other._alloc;
                 for(size_type i = 0 ; i < _size; i++) _alloc.construct(&_data[i], other._data[i]);
             }
             vector& operator= (const vector& other){
-                if(other._data != this->_data){
-                    this->~vector();
-                    new(this) vector(other);
+             if(other._data != this->_data){
+                    clear();
+                    if(_capacity <= 0)
+                    { 
+                        _capacity = other._capacity;
+                        _size = other._size;
+                        _data = _alloc.allocate(_capacity);
+                        _alloc =  other._alloc;
+                        for(size_type i = 0 ; i < _size; i++) _alloc.construct(&_data[i], other._data[i]);
+                    }
+                    else
+                    {
+                        if(_capacity < other._size)
+                        {
+                            _capacity = other._size;
+                            _data = _alloc.allocate(_capacity);
+                        }
+                        _size = other._size;
+                        for(size_type i = 0 ; i < _size; i++) _alloc.construct(&_data[i], other._data[i]);
+                    }
                 }
                 return *this;
             }
@@ -73,24 +91,24 @@ namespace ft{
            
             template <class InputIterator>  
             void assign (InputIterator first, InputIterator last, typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type* = 0)
-            {   
+            { 
                 clear();
                 vector tmp;
                 while(first != last) tmp.push_back(*first++);
                 if (tmp.size() > _capacity)
                 {
-                    if (_capacity > 0)_alloc.deallocate(_data,_capacity);
+                     if (_capacity > 0)_alloc.deallocate(_data,_capacity);
                     _capacity = tmp.size();
                     _data= _alloc.allocate(_capacity);
                 }
-                for( size_type i = 0; i < tmp.size();i++)_alloc.construct(&_data[_size++], tmp.at(i));
-            }
+                for(size_type i = 0; i < tmp.size();i++)_alloc.construct(&_data[_size++], tmp.at(i));
+             }
             void reserve(size_type n)
             {
-                if (n >= max_size())throw std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size");
+               if (n >= max_size())throw std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size");
                 if (n > _capacity){
                     size_type size = _size;
-                    pointer tmp = _alloc.allocate(size);
+                    pointer tmp = _alloc.allocate(size);                  
                     for(size_type i = 0; i < _size; i++)_alloc.construct(&tmp[i], _data[i]);
                     clear();
                     if (_capacity) _alloc.deallocate(_data,_capacity);
@@ -104,7 +122,12 @@ namespace ft{
             }
             void push_back (const value_type& val)
             {
-                if (!_capacity) assign(1,val);
+                if (!_capacity)
+                {
+                    _data = _alloc.allocate(1);
+                    _alloc.construct(&_data[_size++],val);
+                    _capacity = 1; 
+                }
                 else 
                 {
                     if (_size < _capacity)_alloc.construct(&_data[_size++],val);
