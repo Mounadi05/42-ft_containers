@@ -49,7 +49,6 @@ namespace ft{
                 _capacity = other._capacity;
                 _size = other._size;
                 _data = _alloc.allocate(_capacity);
-                _alloc =  other._alloc;
                 for(size_type i = 0 ; i < _size; i++) _alloc.construct(&_data[i], other._data[i]);
             }
             vector& operator= (const vector& other){
@@ -60,7 +59,6 @@ namespace ft{
                         _capacity = other._capacity;
                         _size = other._size;
                         _data = _alloc.allocate(_capacity);
-                        _alloc =  other._alloc;
                         for(size_type i = 0 ; i < _size; i++) _alloc.construct(&_data[i], other._data[i]);
                     }
                     else
@@ -78,16 +76,14 @@ namespace ft{
             }
             void assign(size_type n, const value_type& val)
             {
+              
                 clear();
-                if (n > _capacity)
-                {
-                    if (_capacity > 0)_alloc.deallocate(_data,_capacity);
-                    _capacity = n;
-                    _data= _alloc.allocate(_capacity);
-                }
+                if (_capacity > 0)_alloc.deallocate(_data,_capacity);
+                _capacity = n;
+                _data= _alloc.allocate(_capacity);
                 _size = n;
                 for(size_type i = 0; i < n; i++)_alloc.construct(&_data[i], val);
-            }
+            }       
            
             template <class InputIterator>  
             void assign (InputIterator first, InputIterator last, typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type* = 0)
@@ -102,23 +98,20 @@ namespace ft{
                     _data= _alloc.allocate(_capacity);
                 }
                 for(size_type i = 0; i < tmp.size();i++)_alloc.construct(&_data[_size++], tmp.at(i));
-             }
+               }
             void reserve(size_type n)
             {
                if (n >= max_size())throw std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size");
                 if (n > _capacity){
-                    size_type size = _size;
-                    pointer tmp = _alloc.allocate(size);                  
+                    size_t size = _size;
+                    pointer tmp = _alloc.allocate(n);                  
                     for(size_type i = 0; i < _size; i++)_alloc.construct(&tmp[i], _data[i]);
                     clear();
                     if (_capacity) _alloc.deallocate(_data,_capacity);
-                    _data = _alloc.allocate(n);
                     _capacity = n;
                     _size = size;
-                    for(size_type i = 0; i < _size; i++)_alloc.construct(&_data[i], tmp[i]);
-                    while(size > 0)_alloc.destroy(&tmp[--size]);
-                    _alloc.deallocate(tmp,_size);
-                }
+                    _data = tmp;
+                 }
             }
             void push_back (const value_type& val)
             {
