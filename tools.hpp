@@ -29,5 +29,15 @@ namespace ft{
         }
         return true;
     }
+       template <class It>
+        size_type distance(It first, It last)
+        {
+                size_type result = 0;
+                while (first != last) {
+                    ++first;
+                    ++result;
+                }
+                return result;
+        }
 }
 #endif
