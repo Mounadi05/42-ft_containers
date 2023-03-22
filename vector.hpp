@@ -170,11 +170,26 @@ namespace ft{
             template <class InputIterator>
             void insert (iterator position, InputIterator first, InputIterator last, typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type* = 0)
             {
+                vector tmp;
                 for (; first != last; ++first)
+                     tmp.push_back(*first);
+                size_t n = tmp.size();
+                if (n > 0)
                 {
-                     position = insert(position, *first);
-                    ++position;
+                    size_t tmp_size = _size;
+                    size_t start = position - begin();
+                    if (n + _size > _capacity)reserve(ft::max(n + _capacity, _capacity * 2));
+                    for(;_size > start; _size--)
+                        if (_size + n - 1 < tmp_size)_data[_size + n - 1] = _data[_size - 1];
+                        else _alloc.construct(&_data[_size + n - 1], _data[_size - 1]);
+                    _size = n + tmp_size;
+                    size_t j = 0;
+                    for(size_t i = n ;i > 0; i--) 
+                       if (start < tmp_size) _data[start++]= tmp[j++];
+                       else _alloc.construct(&_data[start++],tmp[j++]);
                 }
+
+
             }
             void swap(vector& x)
             {
