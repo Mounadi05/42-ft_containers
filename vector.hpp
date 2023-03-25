@@ -42,14 +42,13 @@ namespace ft{
 
             ~vector()
             {
-                clear();
+                clear();           
                 if (_capacity > 0)_alloc.deallocate(_data,_capacity);
             }
-            vector (const vector& other){
-                _capacity = other._capacity;
-                _size = other._size;
-                _data = _alloc.allocate(_capacity);
-                for(size_type i = 0 ; i < _size; i++) _alloc.construct(&_data[i], other._data[i]);
+            vector(const vector& other):_data(NULL),_size(0),_capacity(0),_alloc(other._alloc){
+                 _capacity = _size = other._size;
+                if (other._capacity > 0) _data =_alloc.allocate(_size);
+                for(size_type i = 0; i < _size ;i++)_alloc.construct(&_data[i], other._data[i]);
             }
             vector& operator= (const vector& other){
              if(other._data != this->_data){
@@ -76,13 +75,14 @@ namespace ft{
             }
             void assign(size_type n, const value_type& val)
             {
-              
                 clear();
-                if (_capacity > 0)_alloc.deallocate(_data,_capacity);
-                _capacity = n;
-                _data= _alloc.allocate(_capacity);
-                _size = n;
-                for(size_type i = 0; i < n; i++)_alloc.construct(&_data[i], val);
+                if (n > _capacity)
+                {
+                    if (_capacity > 0)_alloc.deallocate(_data,_capacity);
+                    _capacity = n;
+                    _data= _alloc.allocate(_capacity);
+                }
+                while(_size < n )_alloc.construct(&_data[_size++], val);
             }       
            
             template <class InputIterator>  
@@ -90,15 +90,17 @@ namespace ft{
             { 
                 clear();
                 vector tmp;
-                while(first != last) tmp.push_back(*first++);
-                if (tmp.size() > _capacity)
+                 while(first != last) tmp.push_back(*first++);
+                size_t n = tmp.size();
+                 if (n > _capacity)
                 {
                      if (_capacity > 0)_alloc.deallocate(_data,_capacity);
-                    _capacity = tmp.size();
+                    _capacity = n;
                     _data= _alloc.allocate(_capacity);
                 }
-                for(size_type i = 0; i < tmp.size();i++)_alloc.construct(&_data[_size++], tmp.at(i));
-               }
+                size_t j = 0;
+                for(size_type i = 0; i < n;i++)_alloc.construct(&_data[_size++], tmp[j++]);
+            }
             void reserve(size_type n)
             {
                if (n >= max_size())throw std::length_error("allocator<T>::allocate(size_t n) 'n' exceeds maximum supported size");
@@ -107,15 +109,15 @@ namespace ft{
                     pointer tmp = _alloc.allocate(n);                  
                     for(size_type i = 0; i < _size; i++)_alloc.construct(&tmp[i], _data[i]);
                     clear();
-                    if (_capacity) _alloc.deallocate(_data,_capacity);
+                    if (_capacity > 0) _alloc.deallocate(_data,_capacity);
                     _capacity = n;
                     _size = size;
                     _data = tmp;
-                 }
+                }
             }
             void push_back (const value_type& val)
             {
-                if (!_capacity)
+                if (_capacity == 0)
                 {
                     _data = _alloc.allocate(1);
                     _alloc.construct(&_data[_size++],val);
@@ -142,7 +144,12 @@ namespace ft{
             void resize (size_type n, value_type val = value_type())
             {
                 if(n < _size) while(_size > n) _alloc.destroy(&_data[--_size]);
-                else if (n >= max_size()) throw std::length_error("vector");
+                else if (n >= max_size()) 
+                {
+                    clear();
+                    if (_capacity > 0)_alloc.deallocate(_data,_capacity);
+                    throw std::length_error("vector");
+                }
                 else while(_size < n) push_back(val);
             }
             iterator insert (iterator position, const value_type& val)
@@ -170,26 +177,11 @@ namespace ft{
             template <class InputIterator>
             void insert (iterator position, InputIterator first, InputIterator last, typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type* = 0)
             {
-                vector tmp;
                 for (; first != last; ++first)
-                     tmp.push_back(*first);
-                size_t n = tmp.size();
-                if (n > 0)
                 {
-                    size_t tmp_size = _size;
-                    size_t start = position - begin();
-                    if (n + _size > _capacity)reserve(ft::max(n + _capacity, _capacity * 2));
-                    for(;_size > start; _size--)
-                        if (_size + n - 1 < tmp_size)_data[_size + n - 1] = _data[_size - 1];
-                        else _alloc.construct(&_data[_size + n - 1], _data[_size - 1]);
-                    _size = n + tmp_size;
-                    size_t j = 0;
-                    for(size_t i = n ;i > 0; i--) 
-                       if (start < tmp_size) _data[start++]= tmp[j++];
-                       else _alloc.construct(&_data[start++],tmp[j++]);
+                     position = insert(position, *first);
+                    ++position;
                 }
-
-
             }
             void swap(vector& x)
             {
@@ -220,7 +212,14 @@ namespace ft{
             const_reference front() const{return *_data;}
             reference back(){return _data[_size-1];}
             const_reference back() const{return _data[_size-1];}
-            void clear(){while(_size > 0)_alloc.destroy(&_data[--_size]);}
+            void clear() 
+            {
+                for(size_t i = 0 ; i < _size ; i++)
+                {
+                    _alloc.destroy(&_data[i]);
+                }    
+                _size = 0;            
+            }
             iterator begin(){return iterator(_data);}
             const_iterator begin() const{return const_iterator(_data);}
             iterator end(){return iterator(_data + _size);}
