@@ -1,6 +1,6 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
-
+#include <iostream>
 namespace ft{
 
     template <class InputIterator1, class InputIterator2>
@@ -30,9 +30,9 @@ namespace ft{
         return true;
     }
        template <class It>
-        size_type distance(It first, It last)
+        size_t distance(It first, It last)
         {
-                size_type result = 0;
+                size_t result = 0;
                 while (first != last) {
                     ++first;
                     ++result;
