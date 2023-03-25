@@ -18,13 +18,16 @@ namespace ft
             typedef typename ft::iterator_traits<Iterator>::iterator_category iterator_category;
             random_access_iterator(){}
             explicit random_access_iterator(Iterator iter):_iter(iter){}
+            
             template <class U> 
-            random_access_iterator(const random_access_iterator<U>& u):_iter(u.getIterator()){}
+            random_access_iterator(const random_access_iterator<U>& u)
+            :_iter(const_cast<Iterator>(u.getIterator())) {}
+
             random_access_iterator &operator=(const random_access_iterator  & rai){
-                if (this->_iter != rai._iter)this->_iter = rai._iter;
+                if (this->_iter != rai._iter){this->_iter = rai._iter;}
                 return *this;
             }
-            Iterator getIterator() const {return _iter;}
+             Iterator getIterator() const {return _iter;}
             reference operator*() const{return *_iter;}
             pointer operator->() const{return &(operator*());}
             random_access_iterator & operator++(){
@@ -71,15 +74,15 @@ namespace ft
 
     template <class Iter1, class Iter2> 
     inline bool operator!=(const random_access_iterator<Iter1>& lhs,
-    const random_access_iterator<Iter2>& rhs){return !(lhs == rhs);}
+    const random_access_iterator<Iter2>& rhs){return (lhs.getIterator() != rhs.getIterator());}
     
     template <class Iter1, class Iter2> 
     inline bool operator<=(const random_access_iterator<Iter1>& lhs,
-    const random_access_iterator<Iter2>& rhs){return !(rhs < lhs);}
+    const random_access_iterator<Iter2>& rhs){return (lhs.getIterator() <= rhs.getIterator());}
     
     template <class Iter1, class Iter2> 
     inline bool operator>=(const random_access_iterator<Iter1>& lhs,
-    const random_access_iterator<Iter2>& rhs){return !(rhs > lhs);}
+    const random_access_iterator<Iter2>& rhs){return (lhs.getIterator() >= rhs.getIterator());}
 
     template <class Iterator> typename random_access_iterator<Iterator>::difference_type operator-(
     const random_access_iterator<Iterator>& rhs,const random_access_iterator<Iterator>& lhs)
