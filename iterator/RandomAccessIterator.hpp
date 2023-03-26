@@ -20,9 +20,9 @@ namespace ft
             explicit random_access_iterator(Iterator iter):_iter(iter){}
             
             template <class U> 
-            random_access_iterator(const random_access_iterator<U>& u)
-            :_iter(const_cast<Iterator>(u.getIterator())) {}
-
+            random_access_iterator(const random_access_iterator<U>& u):_iter(const_cast<Iterator>(u.getIterator())) {}
+            
+   
             random_access_iterator &operator=(const random_access_iterator  & rai){
                 if (this->_iter != rai._iter){this->_iter = rai._iter;}
                 return *this;
@@ -84,8 +84,9 @@ namespace ft
     inline bool operator>=(const random_access_iterator<Iter1>& lhs,
     const random_access_iterator<Iter2>& rhs){return (lhs.getIterator() >= rhs.getIterator());}
 
-    template <class Iterator> typename random_access_iterator<Iterator>::difference_type operator-(
-    const random_access_iterator<Iterator>& rhs,const random_access_iterator<Iterator>& lhs)
+    template <class Iter1, class Iter2> 
+    typename random_access_iterator<Iter1>::difference_type operator-(
+    const random_access_iterator<Iter1>& rhs,const random_access_iterator<Iter2>& lhs)
     {return (rhs.getIterator() - lhs.getIterator());}
 
     template <class Iterator> random_access_iterator<Iterator> operator+(

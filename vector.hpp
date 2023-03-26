@@ -24,8 +24,8 @@ namespace ft{
             typedef typename Allocator::const_pointer                       const_pointer;
             typedef typename ft::random_access_iterator<pointer>            iterator;
             typedef typename ft::random_access_iterator<const_pointer>      const_iterator;
-            typedef ft::reverse_iterator<pointer>                          reverse_iterator;
-            typedef ft::reverse_iterator<const_pointer>                    const_reverse_iterator;
+            typedef ft::reverse_iterator<iterator>                          reverse_iterator;
+            typedef ft::reverse_iterator<const_iterator>                    const_reverse_iterator;
         protected :
             pointer             _data;
             size_type           _size;
@@ -177,11 +177,27 @@ namespace ft{
             template <class InputIterator>
             void insert (iterator position, InputIterator first, InputIterator last, typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type* = 0)
             {
+                vector tmp;
                 for (; first != last; ++first)
                 {
-                     position = insert(position, *first);
-                    ++position;
+                    tmp.push_back(*first);
                 }
+                size_t n = tmp.size();
+                if (n > 0)
+                {
+                    size_t tmp_size = _size;
+                    size_t start = position - begin();
+                    if (n + _size > _capacity)reserve(ft::max(n + _capacity, _capacity * 2));
+                    for(;_size > start; _size--)
+                        if (_size + n - 1 < tmp_size)_data[_size + n - 1] = _data[_size - 1];
+                        else _alloc.construct(&_data[_size + n - 1], _data[_size - 1]);
+                    _size = n + tmp_size;
+                    size_t j = 0;
+                    for(size_t i = n ;i > 0; i--) 
+                       if (start < tmp_size) _data[start++]= tmp[j++];
+                       else _alloc.construct(&_data[start++],tmp[j++]);
+                }
+                
             }
             void swap(vector& x)
             {
@@ -212,29 +228,19 @@ namespace ft{
             const_reference front() const{return *_data;}
             reference back(){return _data[_size-1];}
             const_reference back() const{return _data[_size-1];}
-            void clear() 
-            {
-                for(size_t i = 0 ; i < _size ; i++)
-                {
-                    _alloc.destroy(&_data[i]);
-                }    
-                _size = 0;            
-            }
+            void clear(){while(_size > 0)_alloc.destroy(&_data[--_size]);}
             iterator begin(){return iterator(_data);}
             const_iterator begin() const{return const_iterator(_data);}
             iterator end(){return iterator(_data + _size);}
             const_iterator end() const{return const_iterator(_data + _size);}
-            reverse_iterator rend(){return reverse_iterator(_data);}
-            const_reverse_iterator rend() const{return const_reverse_iterator(_data);}
-            reverse_iterator rbegin(){return reverse_iterator(_data + _size);}
-            const_reverse_iterator rbegin() const{return const_reverse_iterator(_data + _size);}
+            reverse_iterator rend(){return reverse_iterator(begin());}
+            const_reverse_iterator rend() const{return const_reverse_iterator(begin());}
+            reverse_iterator rbegin(){return reverse_iterator(end());}
+            const_reverse_iterator rbegin() const{return reverse_iterator(end());}
           
     };
     template <class T, class Alloc>  
-    void swap (vector<T,Alloc>& x, vector<T,Alloc>& y)
-    {
-            x.swap(y);
-    }
+    void swap (vector<T,Alloc>& x, vector<T,Alloc>& y){x.swap(y);}
     template <class T, class Allocator>
     bool operator== (const vector<T,Allocator>& lhs, const vector<T,Allocator>& rhs){
         if (lhs.size() == rhs.size())return ft::equal(lhs.begin(),lhs.end(),rhs.begin());    
