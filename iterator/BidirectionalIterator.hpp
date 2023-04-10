@@ -23,12 +23,14 @@ namespace ft
             bidirectional_iterator(const bidirectional_iterator<U>& u)
             :_iter(u.getIterator()) {}
             
-            random_access_iterator &operator=(const bidirectional_iterator  & rai){
+            bidirectional_iterator &operator=(const bidirectional_iterator  & rai){
                 if (this->_iter != rai._iter){this->_iter = rai._iter;}
                 return *this;
             }
             Iterator getIterator() const {return _iter;}
             reference operator*() const{return *_iter;}
+            pointer operator->() const{return &(operator*());}
+
     };
 }
 #endif
