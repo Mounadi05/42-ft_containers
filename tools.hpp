@@ -1,6 +1,9 @@
 #ifndef TOOLS_HPP
 #define TOOLS_HPP
+
 #include <iostream>
+#include "pair.hpp"
+
 namespace ft{
 
     template <class InputIterator1, class InputIterator2>
@@ -29,15 +32,22 @@ namespace ft{
         }
         return true;
     }
-       template <class It>
-        size_t distance(It first, It last)
-        {
-                size_t result = 0;
-                while (first != last) {
-                    ++first;
-                    ++result;
-                }
-                return result;
-        }
+
+    template <class It>
+    size_t distance(It first, It last)
+    {
+            size_t result = 0;
+            while (first != last) {
+                ++first;
+                ++result;
+            }
+            return result;
+    }
+
+    template <class T1,class T2>
+    pair<T1,T2> make_pair (T1 x, T2 y)
+    {
+        return (pair<T1,T2>(x,y) );
+    }
 }
 #endif
