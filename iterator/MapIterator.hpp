@@ -23,8 +23,8 @@ namespace ft
         map_iterator() : _node(nullptr) {}
         explicit map_iterator(Node* node) : _node(node) {}
 
-        template <class Key_, class T_, class Node_>
-        map_iterator(const map_iterator<_Key, _T, _Node>& other)
+        template <class __Key, class __T, class __Node>
+        map_iterator(const map_iterator<__Key, __T, __Node>& other)
         : _node(other.getNode()) {}
 
         self_type& operator=(const map_iterator& other)
@@ -36,8 +36,8 @@ namespace ft
 
         Node* getNode() const { return _node; }
 
-        reference operator*() const { return _node->data; }
-        pointer operator->() const { return &(_node->data); }
+            reference operator*() const{return *_node;}
+        pointer operator->() const{return &(operator*());}
 
         self_type& operator++()
         {
