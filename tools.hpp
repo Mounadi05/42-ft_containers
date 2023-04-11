@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "pair.hpp"
+#include <memory>
 
 namespace ft{
 
@@ -57,5 +58,9 @@ namespace ft{
         typedef Arg2 second_argument_type;
         typedef Result result_type;
     };
+
+    // template <class Type> struct rebind {
+    //     typedef allocator<Type> other;
+    // };
 }
 #endif
