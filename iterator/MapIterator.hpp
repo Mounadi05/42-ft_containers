@@ -1,118 +1,90 @@
-
-#ifndef BIDIRECTIONALITERATOR_HPP
-#define BIDIRECTIONALITERATOR_HPP
+#ifndef MAPITERATOR_HPP
+#define MAPITERATOR_HPP
 
 #include "IteratorTraits.hpp"
+#include "../RedBlackTree.hpp"
 
 namespace ft
 {
-    template<class Key, class T, class Node>
+    template <class T,class compare,class alloc = std::allocator<T> >
     class map_iterator
     {
-        private:
-            Node* _node; 
-            typedef map_iterator<Key, T, Node> self_type;
+    public:
+        typedef T                               value_type;
+        typedef ptrdiff_t                       difference_type;
+        typedef T*                              pointer;
+        typedef T&                              reference;
+        typedef std::bidirectional_iterator_tag iterator_category;
+        typedef typename  RBT<T,compare>::Node* node_pointer;
 
-        public:
-            typedef typename ft::iterator_traits<Node*>::difference_type difference_type;
-            typedef typename ft::iterator_traits<Node*>::value_type value_type;
-            typedef typename ft::iterator_traits<Node*>::pointer pointer;
-            typedef typename ft::iterator_traits<Node*>::reference reference;
-            typedef typename ft::iterator_traits<Node*>::iterator_category iterator_category;
+        map_iterator(node_pointer node = nullptr) : _node(node) {}
 
-            map_iterator() : _node(nullptr) {}
-            explicit map_iterator(Node* node) : _node(node) {}
+        reference operator*() const { return *_node->data; }
 
-            template <class __Key, class __T, class __Node>
-            map_iterator(const map_iterator<__Key, __T, __Node>& other)
-            : _node(other.getNode()) {}
+        pointer operator->() const { return _node->data; }
 
-            self_type& operator=(const map_iterator& other)
+        map_iterator& operator++()
+        {
+            if (_node->right)
             {
-                if (this->_node != other._node)
-                    this->_node = other._node;
-                return *this;
+                _node = _node->right;
+                while (_node->left)
+                    _node = _node->left;
             }
-
-            Node* getNode() const { return _node; }
-
-            reference operator*() const{return _node;}
-            pointer operator->() const{return &(operator*());}
-
-            self_type& operator++()
+            else 
             {
-
-                if (_node)
-                {   
-                    if (_node->right)
-                    {
-                        _node = _node->right;
-                        while (_node->left)
-                            _node = _node->left;
-                    }
-                    else
-                    {
-                        Node* parent = _node->parent;
-                        while (parent && _node == parent->right)
-                        {
-                            _node = parent;
-                            parent = parent->parent;
-                        }
-                        _node = parent;
-                    }
-                }
-                return *this;
-            }
-
-            self_type operator++(int)
-            {
-                self_type temp(*this);
-                operator++();
-                return temp;
-            }
-
-            self_type& operator--()
-            {
-                if (_node)
+                node_pointer prev = _node;
+                _node = _node->parent;
+                while (_node && _node->right == prev)
                 {
-                    if (_node->left)
-                    {
-                        _node = _node->left;
-                        while (_node->right)
-                            _node = _node->right;
-                    }
-                    else
-                    {
-                        Node* parent = _node->parent;
-                        while (parent && _node == parent->left)
-                        {
-                            _node = parent;
-                            parent = parent->parent;
-                        }
-                        _node = parent;
-                    }
+                    prev = _node;
+                    _node = _node->parent;
                 }
-                return *this;
             }
+            return *this;
+        }
 
-            self_type operator--(int)
-            {
-                self_type temp(*this);
-                operator--();
-                return temp;
-            }
+        map_iterator operator++(int)
+        {
+            map_iterator tmp(*this);
+            ++(*this);
+            return tmp;
+        }
 
-            friend bool operator==(const self_type& lhs, const self_type& rhs)
+        map_iterator& operator--()
+        {
+            if (_node->isBlack && _node->right && _node->right->right)
             {
-                return lhs._node == rhs._node;
+                _node = _node->right;
+                while (_node->left)
+                    _node = _node->left;
             }
+            else
+            {
+                node_pointer prev = _node;
+                _node = _node->parent;
+                while (_node && _node->left == prev)
+                {
+                    prev = _node;
+                    _node = _node->parent;
+                }
+            }
+            return *this;
+        }
 
-            friend bool operator!=(const self_type& lhs, const self_type& rhs)
-            {
-                return !(lhs == rhs);
-            }
-    };
+        map_iterator operator--(int)
+        {
+            map_iterator tmp(*this);
+            --(*this);
+            return tmp;
+        }
+
+        bool operator==(const map_iterator& other) const { return _node == other._node; }
+
+        bool operator!=(const map_iterator& other) const { return _node != other._node; }
+    private:
+         node_pointer   _node;
+    }; 
 }
 
 #endif
-
