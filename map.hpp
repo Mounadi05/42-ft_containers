@@ -8,6 +8,7 @@
 #include <type_traits>
 #include "pair.hpp"
 #include "tools.hpp"
+#include "RedBlackTree.hpp"
 
 namespace ft {
 
@@ -26,27 +27,16 @@ namespace ft {
             typedef typename Allocator::reference                           reference;
             typedef typename Allocator::const_reference                     const_reference;
             typedef typename Allocator::pointer                             pointer;
-        private :
-                struct Node
-                {
-                    Node *parent, *left, *right;
-                    bool isBlack;
-                    bool isLeftChild;
-                    value_type value;
-                    Node(Key k, T v) : parent(NULL), left(NULL), right(NULL),
-                    isBlack(false), isLeftChild(false), value(k, v) {}
-                };
-                Node *              _root;
-                size_type           _size;
-                std::allocator<Node >      _alloc;
-                key_compare         _comp;
-        public :
-            typedef Node*                                                   node_pointer;
-            typedef typename Allocator::const_pointer                       const_pointer;
-            typedef typename ft::map_iterator<Key, T, Node>                 iterator;
+       
+            //typedef typename Allocator::const_pointer                       const_pointer;
             //typedef typename ft::map_iterator<const_pointer>                const_iterator;
-            typedef std::reverse_iterator<iterator>                         reverse_iterator;
+            //typedef std::reverse_iterator<iterator>                         reverse_iterator;
             //typedef std::reverse_iterator<const_iterator>                   const_reverse_iterator;
+            private :
+                size_type           _size;
+                Allocator           _alloc;      
+                key_compare         _comp;
+            public :
             class value_compare: public ft::binary_function<value_type,value_type,bool> 
             {
                 friend class map;
@@ -59,7 +49,9 @@ namespace ft {
                         return comp(x.first, y.first);
                     }
             };
-
+           
+            typedef    RBT<value_type,value_compare,Allocator>    rbt;
+            typedef typename ft::map_iterator<value_type,value_compare>            iterator;
             explicit map (const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type())
             :_comp(comp),_alloc(alloc){}
 
@@ -72,74 +64,21 @@ namespace ft {
                 {
                     key_type _key = first->first;
                     mapped_type _value = first->second;
-                    Node * newNode; 
-                    newNode = _alloc.allocate(1);
-                    _alloc.construct(newNode,_key, _value);
-                    newNode->isBlack = false; // new node is always colored red
-
-                    Node *parent = NULL;
-                    Node *current = _root;
-                    while (current != nullptr)
-                    {
-                        parent = current;
-                        if (_key < current->value.first)
-                        {
-                            current = current->left;
-                            newNode->isLeftChild = true;
-                        }
-                        else
-                        {
-                            current = current->right;
-                            newNode->isLeftChild = false;
-                        }
-                    }
-                    newNode->parent = parent;
-                    if (parent == NULL) // tree is empty, new node becomes root
-                    {
-                        _root = newNode;       
-                        _root->isBlack = true; // colored root by black
-                    }
-                    else if (_key < parent->value.first) 
-                        parent->left = newNode;
-                    else 
-                        parent->right = newNode;
-                    _size++;
+                    _tree.insert(_key, _value);
                     first++;
                 }
             }
-            mapped_type& operator[] (const key_type& k)
-            {
-                Node *root = _root; 
-                while(root)
-                {
-                    if (root->value.first == k)
-                        return root->value.second;              
-                    {
-                        if (k < root->value.first)
-                            root = root->left;
-                        else
-                            root = root->right;
-                    }
-                }
-                return root->value.second;
-            }
+           
             size_type size() const
             {
                 return _size;
             }
             iterator begin()
             {
-                return iterator(_root);
-            }
-            iterator end()
-            {
-                return iterator(_root + _size);
-            }
-            // const_iterator begin() const
-            // {
-            //     return iterator(_root);
-            // }
-            
+                 return iterator(_tree._root);
+             }
+            private :
+                rbt      _tree;
     };
 }
 
