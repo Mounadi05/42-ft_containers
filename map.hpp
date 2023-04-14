@@ -6,7 +6,6 @@
 #include "iterator/ReverseIterator.hpp"
 #include <stdexcept>   
 #include <type_traits>
-#include "pair.hpp"
 #include "tools.hpp"
 #include "RedBlackTree.hpp"
 
@@ -34,8 +33,8 @@ namespace ft {
             //typedef std::reverse_iterator<const_iterator>                   const_reverse_iterator;
             private :
                 size_type           _size;
-                Allocator           _alloc;      
                 key_compare         _comp;
+                Allocator           _alloc;     
             public :
             class value_compare: public ft::binary_function<value_type,value_type,bool> 
             {
@@ -50,8 +49,8 @@ namespace ft {
                     }
             };
            
-            typedef    RBT<value_type,value_compare,Allocator>    rbt;
-            typedef typename ft::map_iterator<value_type,value_compare>            iterator;
+            typedef    RBT<value_type,key_compare,Allocator>   rbt;
+            typedef typename ft::map_iterator<value_type,key_compare,Allocator>            iterator;
             explicit map (const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type())
             :_comp(comp),_alloc(alloc){}
 
@@ -64,19 +63,45 @@ namespace ft {
                 {
                     key_type _key = first->first;
                     mapped_type _value = first->second;
-                    _tree.insert(_key, _value);
+                    _tree.insert(_key, _value,_comp);
                     first++;
-                }
+                 }
             }
-           
+            iterator insert (iterator position, const value_type& val)
+            {
+                (void)position;
+                key_type _key = val.first;
+                mapped_type _value = val.second;
+                return (_tree.insert(_key, _value,_comp));
+
+            }
+            // pair<iterator,bool> insert (const value_type& val)
+            // {
+
+            // }
+            
+            
+        //    mapped_type& operator[] (const key_type& k)
+        //    {
+
+        //    }
+            void clear()
+            {
+                _tree.~RBT();
+            }
             size_type size() const
             {
-                return _size;
+                return _tree._size;
             }
             iterator begin()
             {
-                 return iterator(_tree._root);
-             }
+            
+                return iterator(_tree.FindMin());
+            }
+            iterator end()
+            {
+                return iterator(_tree.FindMax());
+            }
             private :
                 rbt      _tree;
     };

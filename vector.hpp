@@ -90,7 +90,7 @@ namespace ft{
             { 
                 clear();
                 vector tmp;
-                 while(first != last) tmp.push_back(*first++);
+                while(first != last) tmp.push_back(*first++);
                 size_t n = tmp.size();
                  if (n > _capacity)
                 {
