@@ -27,30 +27,49 @@ public:
             en._alloc.construct(data,ft::pair<K,V>(p.first,p.second));
         }
         template<class K, class V>
-        Node(K k, V v,RBT en = RBT()) : parent(NULL), left(NULL), right(NULL),
+        Node(K k, V v,RBT en = RBT()) :parent(NULL), left(NULL), right(NULL),
                     isBlack(false), isLeftChild(false) 
         {
             data = en._alloc.allocate(1); 
             en._alloc.construct(data,ft::pair<K,V>(k,v));
         }
+        // Node *get_Nill()
+        // {
+        //     std::cout << "****** > " << std::endl;
+        //     std::cout << hold->Nill->parent->data->first << std::endl;
+        //     std::cout << "****** < " << std::endl;
+        //     return hold->Nill;
+        // }
+       
     };
     std::allocator<Node >   node_alloc;
-
-    RBT() : _root(NULL), _size(0) {}
+    Node *Nill;
+    
+    RBT() : _root(NULL), _size(0) 
+    {            
+        Nill = node_alloc.allocate(1);    
+    }
+    RBT(const RBT& other)
+    {
+        Nill = node_alloc.allocate(1);
+        _root = copyNode(other._root);
+        _size = other._size;
+    }
     RBT& operator=(const RBT& other)
     {
         if (this == &other)
             return *this; 
         this->~RBT();
         
-    if (other._root != NULL)
-    {
-        _root = copyNode(other._root);
-        _size = other._size;
-    }
+        if (other._root != NULL)
+        {
+            Nill = node_alloc.allocate(1);
+            _root = copyNode(other._root);
+            _size = other._size;
+        }
         return *this;    
     }
-    
+  
     ~RBT() 
     {
         if (_root != NULL)
@@ -95,12 +114,12 @@ public:
             _size++;
             balance(_root);
         }
-        return (search(_key));
+         return (search(_key));
     }
 
     Node * FindMin()
     {
-         Node *tmp = _root;
+        Node *tmp = _root;
         if (tmp == NULL)
             return tmp;
         while(tmp->left)
@@ -110,15 +129,31 @@ public:
 
     Node * FindMax()
     {
-
         Node *tmp = _root;
         if (tmp == NULL)
             return tmp;
-        while(tmp)
+        while(tmp->right)
             tmp = tmp->right;
-        return tmp;    
+        Nill->parent = tmp;
+        return (tmp->right);
     }
-
+    template<class K>
+    Node * search (const K& key) const
+    {
+        Node *root = _root; 
+        while(root)
+        {
+            if (root->data->first== key)
+                return root;              
+            {
+                if (key < root->data->first)
+                    root = root->left;
+                else
+                    root = root->right;
+            }
+        }
+        return root;
+    }
     Node* _root;
     size_t _size;
     private :
@@ -234,23 +269,7 @@ public:
                 child->right = node;
                 node->parent = child;
             }
-            template<class K>
-            Node * search (const K& key)
-            {
-                Node *root = _root; 
-                while(root)
-                {
-                    if (root->data->first== key)
-                        return root;              
-                    {
-                        if (key < root->data->first)
-                            root = root->left;
-                        else
-                            root = root->right;
-                    }
-                }
-                return root;
-            }
+        
             void destroy(Node* node) 
             {
                 if (node == NULL)

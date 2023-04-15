@@ -17,10 +17,9 @@ namespace ft
         typedef std::bidirectional_iterator_tag iterator_category;
         typedef typename  RBT<T,compare,alloc>::Node* node_pointer;
 
-        
         map_iterator(node_pointer node = NULL)
         {
-                 _node = node;
+            _node = node;
         }
         reference operator*() const { return *_node->data; }
 
