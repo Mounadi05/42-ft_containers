@@ -4,7 +4,7 @@
 #include "IteratorTraits.hpp"
 #include "../RBT/Node.hpp"
 
-namespace ft
+ namespace ft
 {
    	template<class Val>
 	class TreeIterator {
@@ -20,16 +20,6 @@ namespace ft
 			typedef node<typename remove_const<Val>::type> *				node_pointer;
 		protected:
 			node_pointer root;
-			node_pointer minimum(node_pointer ptr) const {
-				while (ptr->left && !ptr->left->isNil)
-					ptr = ptr->left;
-				return ptr;
-			}
-			node_pointer maximum(node_pointer ptr) const {
-				while (!ptr->right->isNil)
-					ptr = ptr->right;
-				return ptr;
-			}
 		public:
 			TreeIterator() {}
 			TreeIterator(node_pointer ptr) : root(ptr) {}
@@ -47,8 +37,9 @@ namespace ft
 			node_pointer getPointer() const { return root; }
 			TreeIterator & operator++() {
 				if (root->right && !root->right->isNil)
-					root = minimum(root->right);
-				else {
+                    while( root->left && !root->left->isNil)
+					    root = root->left;
+                else {
 					node_pointer tmp = root->parent;
 					while (tmp && root == tmp->right) {
 						root = tmp;
@@ -61,8 +52,9 @@ namespace ft
 			TreeIterator operator++(int) {
 				TreeIterator<value_type> tmp(*this);
 				if (!root->right->isNil)
-					root = minimum(root->right);
-				else {
+                    while( root->left && !root->left->isNil)
+					    root = root->left;				
+                else {
 					node_pointer tmp = root->parent;
 					while (tmp && root == tmp->right) {
 						root = tmp;
@@ -74,7 +66,8 @@ namespace ft
 			}
 			TreeIterator & operator--() {
 				if (root->left && !root->left->isNil)
-					root = maximum(root->left);
+                    while(!root->right->isNil)
+					root = root->left;
 				else {
 					node_pointer tmp = root->parent;
 					while (tmp && root == tmp->left) {
