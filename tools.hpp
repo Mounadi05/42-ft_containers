@@ -62,5 +62,9 @@ namespace ft{
     // template <class Type> struct rebind {
     //     typedef allocator<Type> other;
     // };
+
+
+    template< class T > struct remove_const                { typedef T type; };
+    template< class T > struct remove_const<const T>       { typedef T type; };
 }
 #endif
