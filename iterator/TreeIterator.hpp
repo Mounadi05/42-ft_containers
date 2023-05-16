@@ -3,6 +3,7 @@
 
 #include "IteratorTraits.hpp"
 #include "../RBT/Node.hpp"
+#include "../tools.hpp"
 
  namespace ft
 {
@@ -17,14 +18,14 @@
 			typedef const typename ft::iterator_traits<Val *>::pointer		const_pointer;
 			typedef typename ft::iterator_traits<Val *>::difference_type	difference_type;
 			typedef std::size_t												size_type;
-			typedef node<typename remove_const<Val>::type> *				node_pointer;
+			typedef Node<typename ft::remove_const<Val>::type> *				node_pointer;
 		protected:
 			node_pointer root;
 		public:
 			TreeIterator() {}
 			TreeIterator(node_pointer ptr) : root(ptr) {}
-			TreeIterator(const TreeIterator<typename remove_const<Val>::type> & other) { *this = other; }
-			TreeIterator & operator=(const TreeIterator<typename remove_const<Val>::type> & other) {
+			TreeIterator(const TreeIterator<typename ft::remove_const<Val>::type> & other) { *this = other; }
+			TreeIterator & operator=(const TreeIterator<typename  ft::remove_const<Val>::type> & other) {
 				if (this != &other)
 					root = other.root;
 				return *this;

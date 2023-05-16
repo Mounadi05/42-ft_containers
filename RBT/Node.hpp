@@ -1,18 +1,18 @@
 #ifndef NODE_HPP
 #define NODE_HPP
-
+namespace ft {
 template<class Val>
-	struct node {
+	struct Node {
 		Val	*		data;
-		node *		parent;
-		node *		right;
-		node *		left;
+		Node *		parent;
+		Node *		right;
+		Node *		left;
 		bool		isBlack;
 		bool		isNil;
 		
-		explicit node(Val * _val = NULL) : data(_val), parent(NULL), right(NULL), left(NULL), isBlack(false),  isNil(false) {}
-		node(const node & other) { *this = other; }
-		node & operator=(const node & other) 
+		explicit Node(Val * _val = NULL) : data(_val), parent(NULL), right(NULL), left(NULL), isBlack(false),  isNil(false) {}
+		Node(const Node & other) { *this = other; }
+		Node & operator=(const Node & other) 
         {
 			if (this != &other) 
             {
@@ -26,4 +26,5 @@ template<class Val>
 			return *this;
 		}
 	};
+}
 #endif
