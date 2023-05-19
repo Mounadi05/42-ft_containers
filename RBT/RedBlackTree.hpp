@@ -72,9 +72,9 @@ namespace ft
             }
         }
 
-       n_p copyTree(n_p node)
+        n_p copyTree(n_p node)
         {
-            if (node == _nil)
+            if (node == node->left)
                 return _nil;
 
             n_p newNode = _alloc_node.allocate(1);
