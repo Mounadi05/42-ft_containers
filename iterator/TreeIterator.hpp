@@ -36,42 +36,46 @@
 			const_reference operator*() const { return *(root->data); }
 			const_pointer operator->() const { return &operator*(); }
 			node_pointer getPointer() const { return root; }
-			TreeIterator & operator++() {
-				if (root->right && !root->right->isNil)
-                    while( root->left && !root->left->isNil)
-					    root = root->left;
-                else {
+			 TreeIterator& operator++() 
+			 {
+				if (!root->isNil && !root->right->isNil) 
+				{
+					root = root->right;
+					while (!root->left->isNil)
+						root = root->left;
+				} 
+				else 
+				{
 					node_pointer tmp = root->parent;
-					while (tmp && root == tmp->right) {
+					while (!tmp->isNil && root == tmp->right) {
 						root = tmp;
 						tmp = tmp->parent;
 					}
 					root = tmp;
 				}
 				return *this;
-			}
-			TreeIterator operator++(int) {
+			 }
+			TreeIterator  operator++(int) {
 				TreeIterator<value_type> tmp(*this);
-				if (!root->right->isNil)
-                    while( root->left && !root->left->isNil)
-					    root = root->left;				
-                else {
-					node_pointer tmp = root->parent;
-					while (tmp && root == tmp->right) {
-						root = tmp;
-						tmp = tmp->parent;
-					}
-					root = tmp;
-				}
-				return tmp;
+            	++(*this);
+            	return tmp;
 			}
-			TreeIterator & operator--() {
-				if (root->left && !root->left->isNil)
-                    while(!root->right->isNil)
+			TreeIterator & operator--() 
+			{
+				if (root->isNil)
+				{
+					root = root->parent;
+ 				}
+				else if (!root->isNil && !root->left->isNil) 
+				{
 					root = root->left;
-				else {
+					while (!root->right->isNil)
+						root = root->right;
+				}
+			 	else 
+				{
 					node_pointer tmp = root->parent;
-					while (tmp && root == tmp->left) {
+					while (!tmp->isNil && root == tmp->left) {
 						root = tmp;
 						tmp = tmp->parent;
 					}
@@ -79,9 +83,10 @@
 				}
 				return *this;
 			}
+ 
 			TreeIterator operator--(int) {
 				TreeIterator<value_type> tmp(*this);
-				*this = operator--();
+				--(*this);
 				return tmp;
 			}
 			template<class T>
