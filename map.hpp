@@ -52,10 +52,7 @@ namespace ft {
             const key_compare& comp = key_compare(),const allocator_type& alloc = allocator_type())
             {
                  _tree = rbt(first,last,comp,alloc);
-                _tree.insert(first,last);
             }
-            
-
             map(const map& other)
                 : _tree(other._tree){}
 
@@ -76,6 +73,12 @@ namespace ft {
                 (void)position;
                 return _tree.insert(val);
             }
+            pair<iterator,bool> insert (const value_type& val)
+            {
+                if(_tree.find(val.first) == _tree.end())
+                    return ft::pair<iterator,bool>(_tree.insert(val),true);
+                return ft::pair<iterator,bool>(_tree.insert(val),false);
+            }
             iterator begin()
             {
                 return iterator(_tree.begin());
@@ -92,6 +95,33 @@ namespace ft {
             {
                 return const_iterator(_tree.end());
             }
+            size_type size() const
+            {
+                return _tree.size();
+            }
+            iterator find (const key_type& k)
+            {
+                return _tree.find(k);
+            }
+            const_iterator find (const key_type& k) const
+            {
+                return _tree.find(k);
+            }
+            bool empty() const
+            {
+                return (_tree.size() == 0);
+            }
+
+            void clear()
+            {
+                _tree.clear();
+            }
+
+            void print()
+            {
+                _tree.level_order();
+            }
+
             private :
                 rbt _tree;
         
