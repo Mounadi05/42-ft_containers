@@ -6,13 +6,17 @@
 #include "../pair.hpp"
 #include "../iterator/ReverseIterator.hpp"
 #include "Node.hpp"
+#include <queue>
+
 namespace ft
 {
-    template <class T, class compare = std::less<T>, class alloc = std::allocator<T> >
+    template <class T, class compare = std::less<T>, class alloc = std::allocator<T> > 
     class RBT
     {
     public:
         typedef T value_type;
+        typedef typename value_type::first_type key_type;
+
         typedef compare value_compare;
         typedef alloc allocator_type;
         typedef typename allocator_type::template rebind<ft::Node<value_type> >::other node_allocator;
@@ -63,6 +67,7 @@ namespace ft
         RBT(const RBT &other)
             : _size(other._size), _alloc_value(other._alloc_value), _alloc_node(other._alloc_node), _comp(other._comp)
         {
+            initNil();
             if (other._tree == other._nil)
                 _tree = _nil;
             else
@@ -82,8 +87,8 @@ namespace ft
             _alloc_value.construct(newNode->data, *(node->data));
             newNode->isBlack = node->isBlack;
             newNode->isNil = node->isNil;
-            newNode->parent = _nil;
-            
+            // newNode->left = newNode->right = newNode->parent = _nil;
+
             newNode->left = copyTree(node->left);
             newNode->right = copyTree(node->right);
 
@@ -106,6 +111,7 @@ namespace ft
                 _alloc_value = other._alloc_value;
                 _alloc_node = other._alloc_node;
                 _comp = other._comp;
+                initNil();
 
                 if (other._tree == other._nil)
                     _tree = _nil;
@@ -119,7 +125,7 @@ namespace ft
         }
         ~RBT()
         {
-            if (_tree != _nil)
+            if (_size > 0)
                 destroy(_tree);
             _alloc_node.deallocate(_nil, 1);
         }
@@ -134,40 +140,49 @@ namespace ft
         }
         iterator insert(const value_type &val)
         {
-            n_p newNode = _alloc_node.allocate(1);
-            newNode->data = _alloc_value.allocate(1);
-            _alloc_value.construct(newNode->data, val);
-            newNode->isBlack = false;
-            newNode->left = newNode->right = newNode->parent = _nil;
-            if (_tree == _nil)
+            if (find(val.first) == end())
             {
-                _tree = newNode;
-                _tree->isBlack = true;
-            }
-            else
-            {
-                n_p parent = _nil;
-                n_p current = _tree;
-                while (current != _nil)
+                n_p newNode = _alloc_node.allocate(1);
+                newNode->data = _alloc_value.allocate(1);
+                _alloc_value.construct(newNode->data, val);
+                newNode->isBlack = false;
+                if (_tree == _nil)
                 {
-                    parent = current;
-                    if (_comp(newNode->data->first, current->data->first))
-                        current = current->left;
-                    else
-                        current = current->right;
+                    newNode->left = newNode->right = newNode->parent = _nil;
+                    _tree = newNode;
+                    _tree->isBlack = true;
                 }
-                if (_comp(newNode->data->first, parent->data->first))
-                    parent->left = newNode;
                 else
-                    parent->right = newNode;
+                {
+                    newNode->left = newNode->right = _nil;
+                    newNode->isNil = false;
+                    n_p parent = _nil;
+                    n_p current = _tree;
+                    while (current != _nil)
+                    {
+                        parent = current;
+                        if (_comp(newNode->data->first, current->data->first))
+                            current = current->left;
+                        else
+                            current = current->right;
+                    }
+                    if (_comp(newNode->data->first, parent->data->first))
+                        parent->left = newNode;
+                    else
+                        parent->right = newNode;
 
-                newNode->parent = parent;
-                balance(newNode);
+                    newNode->parent = parent;
+                    balance(newNode);
+                }
+                _size++;
+                return iterator(newNode);
             }
-            ++_size;
-            return iterator(newNode);
+            return iterator(find(val.first));
         }
-
+        size_type size() const
+        {
+            return _size;
+        }
         iterator begin()
         {
             n_p node = _tree;
@@ -201,11 +216,106 @@ namespace ft
             _nil->parent = node;
             return const_iterator(_nil);
         }
+        iterator find(const key_type &k)
+        {
+            n_p root = _tree;
+            while (root != _nil)
+            {
+                if (root->data->first == k)
+                    return iterator(root);
+                {
+                    if (k < root->data->first)
+                        root = root->left;
+                    else
+                        root = root->right;
+                }
+            }
+            return end();
+        }
+        const_iterator find(const key_type &k) const
+        {
+            n_p root = _tree;
+            while (root != _nil)
+            {
+                if (root->data->first == k)
+                    return const_iterator(root);
+                {
+                    if (k < root->data->first)
+                        root = root->left;
+                    else
+                        root = root->right;
+                }
+            }
+            return end();
+        }
+        void clear()
+        {
+            if (_size > 0)
+                destroy(_tree);
+            _tree = _nil;
+            _size = 0;
+        }
+
+
+        void level_order()
+        { std::cout << _tree->right->data->first << std::endl;
+             n_p root = _tree;
+            std::queue<n_p> que;
+            n_p item;
+            que.push(root);
+            int nodesInCurrentLevel = 1;
+            int nodesInNextLevel = 0;
+            int spaces = 32;
+
+            while (!que.empty())
+            {
+                item = que.front();
+                que.pop();
+                nodesInCurrentLevel--;
+
+                for (int i = 0; i < spaces; i++)
+                    std::cout << " ";
+                if (item->isBlack)  std::cout << "B | ";
+                else std::cout << "R | ";
+                if (item->isNil)  std::cout << "N ";
+                else std::cout << "Y ";
+                std::cout << item->data->first;
+
+                for (int i = 0; i < spaces; i++)
+                    std::cout << " ";
+
+                if (item->left != _nil)
+                {
+                    que.push(item->left);
+                    nodesInNextLevel++;
+                }
+
+                if (item->right != _nil)
+                {
+                    que.push(item->right);
+                    nodesInNextLevel++;
+                }
+
+                if (nodesInCurrentLevel == 0)
+                {
+                    std::cout << "\n"
+                              << std::endl;
+                    nodesInCurrentLevel = nodesInNextLevel;
+                    nodesInNextLevel = 0;
+                    spaces /= 2;
+                }
+                else
+                {
+                    for (int i = 0; i < 2 * spaces - 1; i++)
+                        std::cout << " ";
+                }
+            }
+        }
 
     private:
         void destroy(n_p tmp)
         {
-            if (tmp != _nil)
+            if (tmp == _nil)
                 return;
             destroy(tmp->left);
             destroy(tmp->right);
@@ -261,6 +371,9 @@ namespace ft
                         rotateLeft(node->parent->parent);
                     }
                 }
+
+                if (node->parent == _nil) // Handle case when the parent is the root
+                    break;
             }
             _tree->isBlack = true;
         }
