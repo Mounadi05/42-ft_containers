@@ -44,15 +44,11 @@ namespace ft {
             typedef typename rbt::iterator                               iterator;
             typedef typename rbt::const_iterator                         const_iterator;
               explicit map(const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type())
-            : _tree(comp, alloc)
-        {
-        }
+            :_comp(comp),_tree(comp, alloc){}
             template <class InputIterator>  
             map (InputIterator first, InputIterator last,
             const key_compare& comp = key_compare(),const allocator_type& alloc = allocator_type())
-            {
-                 _tree = rbt(first,last,comp,alloc);
-            }
+            : _comp(comp),_tree(first,last,_comp,alloc){}
             map(const map& other)
                 : _tree(other._tree){}
 
@@ -117,15 +113,86 @@ namespace ft {
                 _tree.clear();
             }
 
+            mapped_type& at (const key_type& k)
+            {
+                iterator it = _tree.find(k);          
+                if (it == _tree.end())
+                    throw std::out_of_range("map::at:  key not found");
+                return it->second;
+            }
+            const mapped_type& at (const key_type& k) const
+            {
+                const_iterator it = _tree.find(k);          
+                if (it == _tree.end())
+                    throw std::out_of_range("map::at:  key not found");
+                return it->second;
+            }
+            mapped_type& operator[] (const key_type& k)
+            {
+                iterator it = _tree.find(k);
+                if (it == _tree.end())
+                    it = _tree.insert(value_type(k,T()));
+                return it->second;
+            }
+            size_type count (const key_type& k) const
+            {
+                return (_tree.find(k) != _tree.end());
+            }
+
+            key_compare key_comp() const
+            {
+                return _comp;
+            }
+
             void print()
             {
                 _tree.level_order();
             }
 
             private :
-                rbt _tree;
+            key_compare _comp;
+            rbt _tree;
         
     };
+
+    template <class Key, class T, class Compare, class Alloc>  
+    bool operator== ( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
+    {
+        if (lhs.size() == rhs.size())return ft::equal(lhs.begin(),lhs.end(),rhs.begin());    
+        return false;;
+    }
+
+    template <class Key, class T, class Compare, class Alloc>
+    bool operator<(const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs)
+    {
+        return ft::lexicographical_compare (lhs.begin(), lhs.end(),rhs.begin(),rhs.end());
+     }
+
+    template <class Key, class T, class Compare, class Alloc>
+    bool operator>(const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs)
+    {
+        return (rhs < lhs);
+    }
+
+    template <class Key, class T, class Compare, class Alloc>  
+    bool operator!= ( const map<Key,T,Compare,Alloc>& lhs, const map<Key,T,Compare,Alloc>& rhs )
+    { 
+        return !(lhs == rhs);
+    }
+
+    template <class Key, class T, class Compare, class Alloc>  
+    bool operator<= ( const map<Key,T,Compare,Alloc>& lhs,const map<Key,T,Compare,Alloc>& rhs )
+    {
+        return !( rhs < lhs);
+    }
+
+    template <class Key, class T, class Compare, class Alloc>  
+    bool operator>= ( const map<Key,T,Compare,Alloc>& lhs,const map<Key,T,Compare,Alloc>& rhs )
+    {
+        return !(lhs < rhs);
+    }
+
+
 }
 
 #endif
