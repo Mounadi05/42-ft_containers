@@ -61,7 +61,11 @@ namespace ft
         {
             initNil();
             _tree = _nil;
-            insert(first, last);
+            while (first != last)
+            {
+                insert(*first);
+                first++;
+            }
         }
 
         RBT(const RBT &other)
@@ -144,7 +148,7 @@ namespace ft
             {
                 n_p newNode = _alloc_node.allocate(1);
                 newNode->data = _alloc_value.allocate(1);
-                _alloc_value.construct(newNode->data, val);
+               _alloc_value.construct(newNode->data, val);
                 newNode->isBlack = false;
                 if (_tree == _nil)
                 {
