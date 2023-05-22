@@ -1,9 +1,8 @@
 #ifndef TREEITERATOR_HPP
 #define TREEITERATOR_HPP
 
-#include "IteratorTraits.hpp"
 #include "../RBT/Node.hpp"
-#include "../tools.hpp"
+#include "../utility.hpp"
 
 namespace ft
 {
@@ -33,6 +32,10 @@ namespace ft
             if (this != &other)
                 root = other.root;
             return *this;
+        }
+        node_pointer getNode()
+        {
+            return root;
         }
         ~TreeIterator() {}
         reference operator*() { return *root->data; }

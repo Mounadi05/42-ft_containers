@@ -1,7 +1,7 @@
 #ifndef REVERSEITERATOR_HPP
 #define REVERSEITERATOR_HPP
 
-#include "IteratorTraits.hpp"
+#include "../utility.hpp"
 
 namespace ft
 {

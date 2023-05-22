@@ -1,7 +1,7 @@
 #ifndef RANDOMACCESSITERATOR_HPP
 #define RANDOMACCESSITERATOR_HPP
 
-#include "IteratorTraits.hpp"
+#include "../utility.hpp"
 
 namespace ft
 {
@@ -22,7 +22,6 @@ namespace ft
             template <class U> 
             random_access_iterator(const random_access_iterator<U>& u):_iter(const_cast<Iterator>(u.getIterator())) {}
             
-   
             random_access_iterator &operator=(const random_access_iterator  & rai){
                 if (this->_iter != rai._iter){this->_iter = rai._iter;}
                 return *this;
