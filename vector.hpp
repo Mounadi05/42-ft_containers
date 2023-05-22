@@ -37,7 +37,7 @@ namespace ft{
             const allocator_type& alloc = allocator_type()):_data(NULL),_size(0),_capacity(0),_alloc(alloc){assign(n, val);}
             
             template <class InputIterator> vector (InputIterator first, InputIterator last,
-            const allocator_type& alloc = allocator_type(),typename std::enable_if<!std::is_integral<InputIterator>::value,InputIterator>::type* = 0)
+            const allocator_type& alloc = allocator_type(),typename ft::enable_if<!ft::is_integral<InputIterator>::value,InputIterator>::type* = 0)
             :_data(NULL),_size(0),_capacity(0),_alloc(alloc){assign(first, last);}
 
             ~vector()
@@ -86,7 +86,7 @@ namespace ft{
             }       
            
             template <class InputIterator>  
-            void assign (InputIterator first, InputIterator last, typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type* = 0)
+            void assign (InputIterator first, InputIterator last, typename ft::enable_if<!ft::is_integral<InputIterator>::value, InputIterator>::type* = 0)
             { 
                 clear();
                 vector tmp;
