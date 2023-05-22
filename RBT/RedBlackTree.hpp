@@ -1,7 +1,7 @@
 #ifndef REDBLACKTREE_HPP
 #define REDBLACKTREE_HPP
 
-#include <iostream>
+#include <algorithm>   
 #include <memory>
 #include "../pair.hpp"
 #include "../iterator/ReverseIterator.hpp"
@@ -28,7 +28,7 @@ namespace ft
         typedef std::size_t size_type;
         typedef std::ptrdiff_t difference_type;
         typedef class ft::TreeIterator<T> iterator;
-        typedef const class ft::TreeIterator<T> const_iterator;
+        typedef class ft::TreeIterator<T> const_iterator;
         typedef ft::reverse_iterator<iterator> reverse_iterator;
         typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
 
@@ -228,7 +228,7 @@ namespace ft
                 if (root->data->first == k)
                     return iterator(root);
                 {
-                    if (k < root->data->first)
+                    if (_comp(k,root->data->first))
                         root = root->left;
                     else
                         root = root->right;
@@ -244,7 +244,7 @@ namespace ft
                 if (root->data->first == k)
                     return const_iterator(root);
                 {
-                    if (k < root->data->first)
+                    if (_comp(k,root->data->first))
                         root = root->left;
                     else
                         root = root->right;
@@ -315,8 +315,163 @@ namespace ft
                 }
             }
         }
+        allocator_type get_allocator() const
+        {
+            return  _alloc_value;
+        }
+        void erase(iterator position)
+        {
+            n_p node = position.getNode();
+            n_p toDelete = node;
 
+            if (node != _nil)
+            {
+                if (node->left == _nil)
+                {
+                    node = node->right;
+                    transplant(toDelete, node);
+                }
+                else if (node->right == _nil)
+                {
+                    node = node->left;
+                    transplant(toDelete, node);
+                }
+                else
+                {
+                    n_p tmp = findMin(node->right);
+
+                    if (tmp->parent != node)
+                    {
+                        transplant(tmp, tmp->right);
+                        tmp->right = node->right;
+                        tmp->right->parent = tmp;
+                    }
+
+                    transplant(toDelete, tmp);
+                    tmp->left = node->left;
+                    tmp->left->parent = tmp;
+                }
+
+                _alloc_value.destroy(toDelete->data);
+                _alloc_value.deallocate(toDelete->data, 1);
+                _alloc_node.deallocate(toDelete, 1);
+
+                _size--;
+            }
+        }
+        iterator lower_bound(const key_type& k)
+        {
+            n_p node = _tree;
+            n_p tmp = _nil;
+            while (node != _nil)
+            {
+                if (!_comp(node->data->first, k))
+                {
+                    tmp = node;
+                    node = node->left;
+                }
+                else
+                    node = node->right;
+            }
+            if (tmp == _nil) return end();
+            return iterator(tmp);
+        }
+        const_iterator lower_bound (const key_type& k) const
+        {  
+            n_p node = _tree;
+            n_p tmp = _nil;
+            while (node != _nil)
+            {
+                if (!_comp(node->data->first, k))
+                {
+                    tmp = node;
+                    node = node->left;
+                }
+                else
+                    node = node->right;
+            }
+            if (tmp == _nil) return end();
+            return const_iterator(tmp);
+        }
+        iterator upper_bound(const key_type& k)
+        {
+            n_p root = _tree;
+            n_p tmp = _nil;
+
+            while (root != _nil)
+            {
+                if (_comp(k, root->data->first))
+                {
+                    tmp = root;
+                    root = root->left;
+                }
+                else
+                    root = root->right;
+            }
+
+            if (tmp != _nil)
+                return iterator(tmp);
+            return end();
+        }
+
+        const_iterator upper_bound(const key_type& k) const
+        {
+            n_p root = _tree;
+            n_p tmp = _nil;
+
+            while (root != _nil)
+            {
+                if (_comp(k, root->data->first))
+                {
+                    tmp = root;
+                    root = root->left;
+                }
+                else
+                    root = root->right;
+            }
+            if (tmp != _nil)
+                return const_iterator(tmp);
+            return end();
+        }
+        void swap (RBT& x)
+        {
+            std::swap(this->_tree,x._tree);
+            std::swap(this->_nil,x._nil);
+            std::swap(this->_alloc_node,x._alloc_node);
+            std::swap(this->_alloc_value,x._alloc_value);
+            std::swap(this->_comp,x._comp);
+            std::swap(this->_size,x._size);
+        }
+        size_type max_size() const
+        {
+            return _alloc_node.max_size();
+        }
     private:
+
+       void transplant(n_p u, n_p v)
+        {
+            if (u->parent == _nil)
+                _tree = v;
+            else if (u == u->parent->left)
+                u->parent->left = v;
+            else
+                u->parent->right = v;
+            v->parent = u->parent;
+        }
+        n_p findMin(n_p node)
+        {
+            n_p tmp = node;
+            while(tmp != _nil &&  tmp->left != _nil)
+                tmp = tmp->left;
+            return tmp; 
+        }
+        n_p findMax(n_p node)
+        {
+            n_p tmp = node;
+            while(tmp != _nil &&  tmp->right != _nil)
+                tmp = tmp->right;
+            return tmp; 
+        }
         void destroy(n_p tmp)
         {
             if (tmp == _nil)
