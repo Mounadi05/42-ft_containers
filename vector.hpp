@@ -143,13 +143,20 @@ namespace ft{
             }
             void resize (size_type n, value_type val = value_type())
             {
-                
-                if (n < _size)
-					for (size_type tmp = _size; tmp != n; tmp--)
-						pop_back();
-				else
-					for (size_type tmp = _size; tmp != n; tmp++)
-						push_back(val);
+                if(n < _size) while(_size > n) _alloc.destroy(&_data[--_size]);
+                else if (n >= max_size()) 
+                {
+                    clear();
+                    if (_capacity > 0)_alloc.deallocate(_data,_capacity);
+                    throw std::length_error("vector");
+                }
+                else if (_size < n)
+                {
+                    if (2 * _capacity < n)
+                        reserve(n);
+                     while(_size < n) push_back(val);
+                }
+               
 
             }
             iterator insert (iterator position, const value_type& val)

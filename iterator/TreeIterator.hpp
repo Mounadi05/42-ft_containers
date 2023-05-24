@@ -18,7 +18,7 @@ namespace ft
         typedef const typename ft::iterator_traits<Val *>::pointer const_pointer;
         typedef typename ft::iterator_traits<Val *>::difference_type difference_type;
         typedef std::size_t size_type;
-        typedef Node<typename ft::remove_const<Val>::type> *node_pointer;
+        typedef Node<Val> *node_pointer;
 
     protected:
         node_pointer root;
@@ -26,8 +26,8 @@ namespace ft
     public:
         TreeIterator() {}
         TreeIterator(node_pointer ptr) : root(ptr) {}
-        TreeIterator(const TreeIterator<typename ft::remove_const<Val>::type> &other) { *this = other; }
-        TreeIterator &operator=(const TreeIterator<typename ft::remove_const<Val>::type> &other)
+        TreeIterator(const TreeIterator<Val> &other) { *this = other; }
+        TreeIterator &operator=(const TreeIterator<Val> &other)
         {
             if (this != &other)
                 root = other.root;

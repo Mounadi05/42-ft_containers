@@ -215,10 +215,6 @@ namespace ft {
             {
                 _tree.swap(x._tree);
             }
-            void print()
-            {
-                _tree.level_order();
-            }
             size_type max_size() const
             {
                 return _tree.max_size();
@@ -281,7 +277,6 @@ namespace ft {
     {
         return !(lhs < rhs);
     }
-
 
 }
 

@@ -6,8 +6,7 @@
 #include "../pair.hpp"
 #include "../iterator/ReverseIterator.hpp"
 #include "Node.hpp"
-#include <queue>
-
+ 
 namespace ft
 {
     template <class T, class compare = std::less<T>, class alloc = std::allocator<T> > 
@@ -261,60 +260,6 @@ namespace ft
         }
 
 
-        void level_order()
-        { std::cout << _tree->right->data->first << std::endl;
-             n_p root = _tree;
-            std::queue<n_p> que;
-            n_p item;
-            que.push(root);
-            int nodesInCurrentLevel = 1;
-            int nodesInNextLevel = 0;
-            int spaces = 32;
-
-            while (!que.empty())
-            {
-                item = que.front();
-                que.pop();
-                nodesInCurrentLevel--;
-
-                for (int i = 0; i < spaces; i++)
-                    std::cout << " ";
-                if (item->isBlack)  std::cout << "B | ";
-                else std::cout << "R | ";
-                if (item->isNil)  std::cout << "N ";
-                else std::cout << "Y ";
-                std::cout << item->data->first;
-
-                for (int i = 0; i < spaces; i++)
-                    std::cout << " ";
-
-                if (item->left != _nil)
-                {
-                    que.push(item->left);
-                    nodesInNextLevel++;
-                }
-
-                if (item->right != _nil)
-                {
-                    que.push(item->right);
-                    nodesInNextLevel++;
-                }
-
-                if (nodesInCurrentLevel == 0)
-                {
-                    std::cout << "\n"
-                              << std::endl;
-                    nodesInCurrentLevel = nodesInNextLevel;
-                    nodesInNextLevel = 0;
-                    spaces /= 2;
-                }
-                else
-                {
-                    for (int i = 0; i < 2 * spaces - 1; i++)
-                        std::cout << " ";
-                }
-            }
-        }
         allocator_type get_allocator() const
         {
             return  _alloc_value;
@@ -531,7 +476,7 @@ namespace ft
                     }
                 }
 
-                if (node->parent == _nil) // Handle case when the parent is the root
+                if (node->parent == _nil) 
                     break;
             }
             _tree->isBlack = true;
